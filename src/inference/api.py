@@ -12,6 +12,7 @@ Run:
     uvicorn src.inference.api:app --host 0.0.0.0 --port 8000 --reload
 """
 import json
+import os
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -42,8 +43,10 @@ CACHE_DIR = ROOT / "data" / "alphagenome_scores" / "aging"
 API_KEY_FILE = ROOT / "env" / "api_key.txt"
 GALLERY_FILE = ROOT / "webapp" / "gallery.json"
 
-_api_key = None
-if API_KEY_FILE.exists():
+# Resolve API key from: (1) ALPHAGENOME_API_KEY env var [Hugging Face Space
+# secret], or (2) local env/api_key.txt [local dev]. Never logged.
+_api_key = os.environ.get("ALPHAGENOME_API_KEY")
+if not _api_key and API_KEY_FILE.exists():
     _api_key = API_KEY_FILE.read_text().strip()
 
 

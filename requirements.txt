@@ -1,0 +1,16 @@
+# Pinned to the same versions used at training time for reproducibility.
+# (Conda environment.yml is the source of truth for local dev — this mirror
+# is for HF Spaces / Docker / pip-based environments.)
+alphagenome==0.6.1
+fastapi>=0.115
+uvicorn[standard]>=0.34
+pydantic>=2.0
+numpy>=1.26,<2.0
+pandas>=2.2
+scipy>=1.13
+scikit-learn>=1.5
+joblib>=1.4
+pyarrow>=16
+requests>=2.32
+matplotlib>=3.9
+pysam>=0.23

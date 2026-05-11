@@ -1,0 +1,33 @@
+# Keep the gigabyte AlphaGenome score caches out of the Docker build context.
+# The app re-fetches whatever it needs via live AlphaGenome inference at
+# request time. Precomputed gallery data is in webapp/gallery.json which
+# IS shipped.
+data/alphagenome_scores/
+data/raw/
+
+# Local secrets
+env/api_key.txt
+env/*.txt
+!env/api_key.example.txt
+
+# Pysam-downloaded 1000G tabix indexes (used only by collect_controls_v2.py
+# which is dev-only; not needed at serving time)
+1kGP_high_coverage_Illumina.*.tbi
+*.vcf.gz
+*.vcf.gz.tbi
+
+# Python noise
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+*.egg-info/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Git
+.git
+.gitignore
