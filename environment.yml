@@ -1,0 +1,25 @@
+name: aging-atlas
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.10
+  - numpy
+  - pandas
+  - scipy
+  - scikit-learn
+  - matplotlib
+  - seaborn
+  - joblib
+  - pyarrow
+  - requests
+  - jupyter
+  - pytest
+  - pip
+  - pip:
+      - alphagenome==0.6.1
+      - umap-learn
+      - statsmodels
+      - fastapi
+      - uvicorn
+      - pydantic

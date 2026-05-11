@@ -1,0 +1,76 @@
+{
+  "variants": [
+    {
+      "rsid": "rs7412",
+      "note": "APOE \u03b52 \u2014 Alzheimer's-protective",
+      "trait_category": "alzheimers",
+      "nearest_gene": "APOE",
+      "p_aging": 0.5148929560127076,
+      "binary_prediction": "aging",
+      "trait_prediction": "longevity"
+    },
+    {
+      "rsid": "rs429358",
+      "note": "APOE \u03b54 \u2014 Alzheimer's-risk",
+      "trait_category": "alzheimers",
+      "nearest_gene": "APOE",
+      "p_aging": 0.598118426357655,
+      "binary_prediction": "aging",
+      "trait_prediction": "cardiovascular"
+    },
+    {
+      "rsid": "rs2802292",
+      "note": "FOXO3 \u2014 longevity",
+      "trait_category": "longevity",
+      "nearest_gene": "FOXO3",
+      "p_aging": 0.4686564481702952,
+      "binary_prediction": "control",
+      "trait_prediction": "cardiovascular"
+    },
+    {
+      "rsid": "rs2736100",
+      "note": "TERT \u2014 telomere length",
+      "trait_category": "telomere_length",
+      "nearest_gene": "TERT",
+      "p_aging": 0.5150449630844551,
+      "binary_prediction": "aging",
+      "trait_prediction": "telomere_length"
+    },
+    {
+      "rsid": "rs1333049",
+      "note": "CDKN2B-AS1 \u2014 coronary artery disease",
+      "trait_category": "cardiovascular",
+      "nearest_gene": "CDKN2B-AS1",
+      "p_aging": 0.5255403476249538,
+      "binary_prediction": "aging",
+      "trait_prediction": "cardiovascular"
+    },
+    {
+      "rsid": "rs10757278",
+      "note": "CDKN2B-AS1 \u2014 CAD, aging",
+      "trait_category": "cardiovascular",
+      "nearest_gene": "CDKN2B-AS1",
+      "p_aging": 0.6692202664991851,
+      "binary_prediction": "aging",
+      "trait_prediction": "cardiovascular"
+    },
+    {
+      "rsid": "rs10757274",
+      "note": "CDKN2B-AS1 \u2014 CAD",
+      "trait_category": "cardiovascular",
+      "nearest_gene": "CDKN2B-AS1",
+      "p_aging": 0.7422820465810231,
+      "binary_prediction": "aging",
+      "trait_prediction": "cardiovascular"
+    },
+    {
+      "rsid": "rs1556516",
+      "note": "cardiovascular",
+      "trait_category": "cardiovascular",
+      "nearest_gene": "CDKN2B-AS1",
+      "p_aging": 0.5015753205621617,
+      "binary_prediction": "aging",
+      "trait_prediction": "cardiovascular"
+    }
+  ]
+}

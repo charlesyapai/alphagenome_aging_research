@@ -1,0 +1,61 @@
+{
+  "binary": {
+    "cv": {
+      "accuracy": 0.5532196059586737,
+      "balanced_accuracy": 0.5581703386169541,
+      "f1": 0.4852595155709343,
+      "roc_auc": 0.580381455170132,
+      "pr_auc": 0.6141506239918944,
+      "brier": 0.24289458919428553,
+      "n": 8324,
+      "n_positive": 4299
+    },
+    "test": {
+      "accuracy": 0.5670103092783505,
+      "balanced_accuracy": 0.5736123020636826,
+      "f1": 0.48148148148148145,
+      "roc_auc": 0.6008557269061471,
+      "pr_auc": 0.6345353697153049,
+      "brier": 0.24021653292123732,
+      "n": 2134,
+      "n_positive": 1105
+    },
+    "permutation_p": 0.000999000999000999,
+    "observed_auc_perm_context": 0.580381455170132,
+    "naive_cv_auc": 0.5829362021212503,
+    "grouped_cv_auc": 0.580381455170132,
+    "leakage_delta_auc": 0.0025547469511183474,
+    "n_train": 8324,
+    "n_test": 2134,
+    "n_gene_groups_train": 2541
+  },
+  "multiclass": {
+    "classes": [
+      "cardiovascular",
+      "musculoskeletal",
+      "other_aging",
+      "cancer",
+      "telomere_length",
+      "metabolic",
+      "sensory_aging",
+      "longevity",
+      "inflammation",
+      "organ_decline",
+      "alzheimers",
+      "biological_aging"
+    ],
+    "n_classes": 12,
+    "cv_accuracy": 0.39552420335684746,
+    "cv_balanced_accuracy": 0.1103470862665325,
+    "test_accuracy": 0.36230558096980786,
+    "test_balanced_accuracy": 0.09614389693711343,
+    "majority_baseline_accuracy": 0.5022872827081427,
+    "random_baseline_accuracy": 0.08333333333333333,
+    "n_train": 4111,
+    "n_test": 1093
+  },
+  "config": {
+    "seed": 42,
+    "n_permutations": 1000
+  }
+}

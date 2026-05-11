@@ -1,0 +1,52 @@
+# Secrets — never commit
+env/api_key.txt
+env/*.txt
+!env/api_key.example.txt
+*.key
+.env
+.env.*
+
+# Large AlphaGenome score caches (regenerable via src/data/score_variants.py)
+data/alphagenome_scores/
+
+# Empty placeholder
+data/raw/
+
+# Pysam-downloaded 1000G tabix index files (auto-fetched on first use)
+1kGP_high_coverage_Illumina.*.tbi
+*.vcf.gz
+*.vcf.gz.tbi
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Build / packaging
+build/
+dist/
+*.egg
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*~
+
+# Conda / venv
+.conda/
+venv/
+.venv/
+
+# Optional: temp / log files
+*.log
+/tmp/

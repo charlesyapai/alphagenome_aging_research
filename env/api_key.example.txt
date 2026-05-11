@@ -1,0 +1,5 @@
+Paste your AlphaGenome API key here and rename this file to api_key.txt.
+
+Get a key from https://github.com/google-deepmind/alphagenome (free, request access).
+
+api_key.txt is gitignored — it must never be committed.

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AlphaGenome × Aging Variant Study</title>
+  <link rel="stylesheet" href="/static/css/app.css" />
+</head>
+<body>
+  <header>
+    <h1>AlphaGenome × Aging Variant Study</h1>
+    <p class="subtitle">
+      Inference demo: <em>does a given genetic variant have a regulatory
+      signature similar to aging-associated variants?</em>
+    </p>
+    <nav>
+      <a href="#about">About</a>
+      <a href="#gallery">Gallery</a>
+      <a href="#predict">Predict</a>
+      <a href="#compare">Compare</a>
+      <a href="/docs/pipeline.html">Pipeline</a>
+    </nav>
+  </header>
+
+  <main>
+    <section id="about" class="card">
+      <h2>What this is</h2>
+      <p>
+        Two models are at work here:
+      </p>
+      <ol>
+        <li>
+          <strong>AlphaGenome</strong> (Google DeepMind, pretrained) predicts
+          regulatory effects of a DNA variant across ~700 biosamples and 5+
+          output types (RNA-seq, ATAC, DNase, ChIP-histone, ChIP-TF).
+        </li>
+        <li>
+          <strong>Aging classifier</strong> (this project, Random Forest on
+          ~10k variants) takes those AlphaGenome scores and predicts whether
+          the variant's regulatory signature looks like an aging-associated
+          variant or a MAF-matched control.
+        </li>
+      </ol>
+      <p class="caveat">
+        <strong>Caveats:</strong> the aging label is heterogeneous (GWAS, longevity
+        cohorts, aging-gene regions); controls are matched on population
+        frequency but not trait-negative-verified; AlphaGenome predictions are
+        model outputs, not direct measurements. Numbers are a useful prior,
+        not a diagnosis.
+      </p>
+    </section>
+
+    <section id="gallery" class="card">
+      <h2>Gallery — precomputed variants</h2>
+      <p>
+        A curated set of well-studied aging variants, pre-scored. Click to view
+        predicted regulatory profile + aging-classifier output.
+      </p>
+      <div id="gallery-grid" class="gallery-grid">
+        <div class="gallery-loading">Loading...</div>
+      </div>
+    </section>
+
+    <section id="predict" class="card">
+      <h2>Predict for your own variant (live)</h2>
+      <p>
+        Enter an rsID or a <code>chr:pos:ref:alt</code> coordinate. First call
+        goes live to AlphaGenome (~30-60s); subsequent calls for pre-scored
+        variants are instant from cache.
+      </p>
+      <form id="predict-form">
+        <input type="text" id="rsid-input" name="rsid"
+               placeholder="rs7412 or chr19:44908822:C:T"
+               autocomplete="off" />
+        <button type="submit">Predict</button>
+      </form>
+      <div id="predict-result"></div>
+    </section>
+
+    <section id="compare" class="card">
+      <h2>Compare two variants</h2>
+      <form id="compare-form">
+        <input type="text" id="var-a" placeholder="Variant A (rs7412)" />
+        <input type="text" id="var-b" placeholder="Variant B (rs429358)" />
+        <button type="submit">Compare</button>
+      </form>
+      <div id="compare-result"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>
+      Code: <a href="https://github.com/charlesyap">github.com/charlesyap</a>
+      · Pipeline: <a href="/docs/pipeline.html">docs/pipeline.html</a>
+      · AlphaGenome: <a href="https://github.com/google-deepmind/alphagenome">google-deepmind/alphagenome</a>
+    </p>
+  </footer>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

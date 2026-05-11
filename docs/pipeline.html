@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Pipeline — AlphaGenome × Aging Variant Study</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --ink: #111827;
+    --muted: #6b7280;
+    --accent: #4f46e5;
+    --accent-2: #0891b2;
+    --rule: #e5e7eb;
+    --card: #f9fafb;
+    --positive: #dc2626;
+    --negative: #2563eb;
+    --code-bg: #0f172a;
+    --code-ink: #e2e8f0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    margin: 0;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 40px 24px; }
+  h1 { font-size: 32px; letter-spacing: -0.02em; margin: 0 0 4px; }
+  h2 { font-size: 22px; margin: 44px 0 8px; padding-top: 20px;
+       border-top: 1px solid var(--rule); }
+  h2:first-of-type { border-top: 0; padding-top: 0; }
+  h3 { font-size: 17px; margin: 28px 0 6px; color: var(--accent); }
+  p  { margin: 10px 0; }
+  .lede { font-size: 18px; color: var(--muted); margin: 8px 0 24px; }
+  code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 14px; }
+  code { background: #f1f5f9; padding: 1px 5px; border-radius: 3px; }
+  pre {
+    background: var(--code-bg);
+    color: var(--code-ink);
+    padding: 16px 18px;
+    border-radius: 8px;
+    overflow-x: auto;
+    line-height: 1.45;
+    font-size: 13px;
+    margin: 14px 0;
+  }
+  pre code { background: none; padding: 0; color: inherit; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 18px 22px;
+    margin: 16px 0;
+  }
+  .caveat {
+    background: #fef2f2;
+    border-left: 4px solid var(--positive);
+    padding: 14px 18px;
+    border-radius: 0 6px 6px 0;
+    margin: 16px 0;
+  }
+  .callout {
+    background: #eef2ff;
+    border-left: 4px solid var(--accent);
+    padding: 14px 18px;
+    border-radius: 0 6px 6px 0;
+    margin: 16px 0;
+  }
+  table {
+    width: 100%; border-collapse: collapse; margin: 16px 0;
+    font-size: 14px;
+  }
+  th, td { padding: 8px 10px; border-bottom: 1px solid var(--rule);
+           text-align: left; }
+  th { background: #f1f5f9; font-weight: 600; }
+  td.num { font-family: ui-monospace, monospace; text-align: right; }
+  nav.toc {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 16px 0 32px;
+  }
+  nav.toc ol { margin: 0; padding-left: 24px; }
+  nav.toc a { color: var(--accent-2); text-decoration: none; }
+  nav.toc a:hover { text-decoration: underline; }
+  .diagram {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 24px;
+    margin: 16px 0;
+    font-family: ui-monospace, monospace;
+    font-size: 13px;
+    white-space: pre;
+    overflow-x: auto;
+    line-height: 1.3;
+  }
+  footer { color: var(--muted); font-size: 13px; margin-top: 48px;
+           padding-top: 16px; border-top: 1px solid var(--rule); }
+  .two-col {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  }
+  @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+  .badge {
+    display: inline-block; font-size: 11px; background: var(--accent);
+    color: white; padding: 2px 8px; border-radius: 10px;
+    font-weight: 600; letter-spacing: 0.03em;
+    margin-left: 8px;
+  }
+  .badge.pre { background: #059669; }
+  .badge.ours { background: var(--accent); }
+  kbd {
+    background: #f1f5f9; border: 1px solid var(--rule); border-radius: 3px;
+    padding: 1px 6px; font-family: ui-monospace, monospace; font-size: 12px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>AlphaGenome × Aging Variant Study — Pipeline</h1>
+<p class="lede">
+  An end-to-end walkthrough of what the project does, how the data flows,
+  which parts are inference over a pretrained model, and where honest
+  methodology matters.
+</p>
+
+<nav class="toc">
+  <strong>Contents</strong>
+  <ol>
+    <li><a href="#overview">Overview: two models, one inference pipeline</a></li>
+    <li><a href="#data">Data — where variants come from</a></li>
+    <li><a href="#controls">Matched controls — why MAF matching matters</a></li>
+    <li><a href="#inference">AlphaGenome inference step</a></li>
+    <li><a href="#features">Feature aggregation</a></li>
+    <li><a href="#splits">Splits &amp; validation</a></li>
+    <li><a href="#train">Training the classifier</a></li>
+    <li><a href="#results">Results &amp; honest baselines</a></li>
+    <li><a href="#webapp">Inference pipeline (webapp)</a></li>
+    <li><a href="#limits">Limitations</a></li>
+    <li><a href="#v1">What changed from v1</a></li>
+  </ol>
+</nav>
+
+<!-- ========================================================= -->
+
+<h2 id="overview">1. Overview: two models, one inference pipeline</h2>
+
+<p>
+  This project connects a large pretrained model to a small domain
+  classifier. The distinction is load-bearing:
+</p>
+
+<table>
+  <tr>
+    <th></th>
+    <th>AlphaGenome <span class="badge pre">pretrained</span></th>
+    <th>Aging classifier <span class="badge ours">ours</span></th>
+  </tr>
+  <tr>
+    <td>Trained on</td>
+    <td>Multi-omic tracks, ~700 biosamples, Nature 2026</td>
+    <td>AlphaGenome features on ~10k variants</td>
+  </tr>
+  <tr>
+    <td>Role here</td>
+    <td>Frozen inference — scores each variant</td>
+    <td>Decision layer — aging vs matched control</td>
+  </tr>
+  <tr>
+    <td>Architecture</td>
+    <td>Large multi-output neural net</td>
+    <td>Random Forest / logistic regression</td>
+  </tr>
+  <tr>
+    <td>Input</td>
+    <td>1-Mb DNA window around variant</td>
+    <td>115-d feature vector per variant</td>
+  </tr>
+  <tr>
+    <td>Output</td>
+    <td>~26k predictions × tissue × track</td>
+    <td>P(aging) + trait category</td>
+  </tr>
+</table>
+
+<div class="callout">
+  <strong>What this means:</strong> the biology signal comes from
+  AlphaGenome. The engineering contribution of this project is the
+  inference pipeline: the design that connects a variant input to a
+  defensible, honestly-validated prediction.
+</div>
+
+<div class="diagram">
+┌──────────────┐    ┌──────────────┐    ┌─────────────┐    ┌───────────────┐
+│ rsID / coord │───▶│   Ensembl    │───▶│  AlphaGenome│───▶│    Feature    │
+│  user input  │    │  resolution  │    │   inference │    │  aggregation  │
+└──────────────┘    └──────────────┘    └─────────────┘    └──────┬────────┘
+                                                                   │
+                   ┌───────────────────────────────────────────────┘
+                   │
+                   ▼
+         ┌──────────────────┐    ┌──────────────────┐
+         │  Aging classifier│───▶│   JSON response  │
+         │  (binary + trait)│    │ P, heatmap, feats│
+         └──────────────────┘    └──────────────────┘
+</div>
+
+<!-- ========================================================= -->
+
+<h2 id="data">2. Data — where variants come from</h2>
+
+<h3>Aging variants (5,211)</h3>
+<p>Imported from six curated sources (all from v1):</p>
+
+<table>
+<tr><th>Source</th><th>N</th><th>Signal</th></tr>
+<tr><td>GWAS Catalog</td><td class="num">4,983</td><td>Statistical trait associations</td></tr>
+<tr><td>LongevityMap</td><td class="num">183</td><td>Longevity cohort associations</td></tr>
+<tr><td>Curated literature</td><td class="num">45</td><td>Landmark aging variants</td></tr>
+<tr><td>HALL Database <em>(via gene regions)</em></td><td class="num">—</td><td>Curated aging SNPs</td></tr>
+<tr><td>Open Genes 2,402</td><td class="num">—</td><td>Aging gene regions</td></tr>
+<tr><td>CellAge 866</td><td class="num">—</td><td>Senescence gene regions</td></tr>
+</table>
+
+<p>
+  Each variant has a trait category (cardiovascular, cancer, longevity,
+  telomere length, metabolic, sensory aging, inflammation, musculoskeletal,
+  other aging, organ decline, Alzheimer's, biological aging, …), a
+  p-value where available, and a chromosome / position / ref / alt.
+</p>
+
+<div class="card">
+  <strong>Key tables:</strong>
+  <ul>
+    <li><code>data/processed/aging_variants.csv</code> — 5,211 rows</li>
+    <li><code>data/processed/vep_annotations.csv</code> — VEP consequence, gene, gnomAD AF</li>
+  </ul>
+</div>
+
+<!-- ========================================================= -->
+
+<h2 id="controls">3. Matched controls — why MAF matching matters</h2>
+
+<p>
+  For a classifier to have meaningful output, the aging and control
+  distributions must differ <em>only</em> on the biology we care about.
+  In v1, controls were chromosome-matched only. This let a simple bias
+  into the data:
+</p>
+
+<table>
+<tr><th></th><th>Aging (v1)</th><th>Control (v1)</th></tr>
+<tr><td>Source</td><td>GWAS — discovery biased toward common</td>
+    <td>Ensembl — random — dominated by rare</td></tr>
+<tr><td>Mean gnomAD AF</td><td class="num">0.31</td><td class="num">unknown (93%)</td></tr>
+<tr><td>Effective signal</td><td colspan="2" style="text-align:center;">
+    "is the variant common?" — not "aging vs not"</td></tr>
+</table>
+
+<p>
+  v2.1 replaces the controls with one-to-one MAF-matched selections drawn
+  from the <strong>1000 Genomes GRCh38 high-coverage phased panel (2,504
+  unrelated samples, 2022 release)</strong>:
+</p>
+
+<ol>
+  <li>For each aging variant, we know its gnomAD allele frequency (from VEP).</li>
+  <li>We convert AF → MAF = min(AF, 1-AF) and bin into one of five bins
+      (<code>&lt;0.1%</code>, <code>0.1-1%</code>, <code>1-5%</code>,
+      <code>5-10%</code>, <code>10-50%</code>).</li>
+  <li>We open the tabix-indexed 1000G VCF for that chromosome directly
+      over HTTPS with <code>pysam.VariantFile</code>. Range requests
+      fetch just the bytes for the target region (±50–1,000 kb, widening
+      only when needed).</li>
+  <li>For each record in the region, we read <code>INFO/AF</code>
+      directly — no second lookup — and keep biallelic SNVs whose MAF bin
+      matches the target.</li>
+  <li>We exclude aging rsIDs and aging positions, then pick a random
+      matching variant.</li>
+</ol>
+
+<div class="callout">
+  <strong>Result:</strong> each control is matched to one aging variant
+  on MAF bin, chromosome, and genomic neighborhood. The binary task is
+  balanced by construction (~5,000 vs ~5,000), so raw accuracy is no
+  longer a trick. Smoke test (n=20): 100% match rate, per-bin matched
+  distribution mirrors the aging bin distribution exactly.
+</div>
+
+<div class="caveat" style="font-size:13px; padding:10px 14px;">
+  Why not Ensembl REST? The first attempt used
+  <code>/overlap/region/variation</code> + batch POST
+  <code>/variation/human</code>. At scale it returned multi-megabyte JSON
+  per query and timed out at 30–500 s per variant with 0% match rate. The
+  tabix-over-HTTP path returns 3–4k records per query in ~1 s. Same
+  science, 200× faster.
+</div>
+
+<!-- ========================================================= -->
+
+<h2 id="inference">4. AlphaGenome inference step <span class="badge pre">pretrained</span></h2>
+
+<p>
+  Each variant gets scored by AlphaGenome exactly once and the result is
+  cached to a Parquet file. AlphaGenome returns 19 AnnData objects
+  containing predictions across 715 biosamples:
+</p>
+
+<table>
+<tr><th>Output type</th><th>What it predicts</th></tr>
+<tr><td>RNA_SEQ</td><td>Gene expression change (per gene × biosample)</td></tr>
+<tr><td>ATAC</td><td>Chromatin accessibility</td></tr>
+<tr><td>DNASE</td><td>DNase hypersensitivity</td></tr>
+<tr><td>CHIP_HISTONE</td><td>Histone mark occupancy</td></tr>
+<tr><td>CHIP_TF</td><td>Transcription factor binding</td></tr>
+<tr><td>+ active-track variants, CAGE, PROCAP, splicing, polyA</td><td>Additional regulatory outputs</td></tr>
+</table>
+
+<pre><code>from alphagenome.models import dna_client
+from alphagenome.data import genome
+
+model = dna_client.create(api_key)
+scorers = dna_client.variant_scorers_lib.get_recommended_scorers(
+    dna_client.Organism.HOMO_SAPIENS
+)
+
+variant = genome.Variant(chromosome=chrom, position=pos,
+                         reference_bases=ref, alternate_bases=alt)
+interval = genome.Interval(chromosome=chrom,
+                           start=pos - 500_000, end=pos + 500_000)
+
+results = model.score_variant(interval=interval, variant=variant,
+                              variant_scorers=scorers)</code></pre>
+
+<p>
+  A single variant produces about 26,500 prediction rows once flattened
+  (715 biosamples × ~5 main output types × a small gene set for
+  gene-level scorers). Per-variant compute is ~15–30 seconds on the
+  hosted API.
+</p>
+
+<!-- ========================================================= -->
+
+<h2 id="features">5. Feature aggregation</h2>
+
+<p>
+  26,500 raw scores per variant is more than a small downstream classifier
+  can use. We aggregate to a 115-dimensional summary:
+</p>
+
+<div class="card">
+  <p><strong>For each of 5 output types</strong>
+     (RNA_SEQ, ATAC, DNASE, CHIP_HISTONE, CHIP_TF):</p>
+  <ul>
+    <li>For each of 10 tissue categories (brain, heart, liver, blood, kidney,
+        muscle, adipose, skin, colon, lung):
+        <ul>
+          <li><code>{ot}__{tissue}__max</code> — max |score| (signed)</li>
+          <li><code>{ot}__{tissue}__mean_abs</code> — mean |score|</li>
+        </ul>
+    </li>
+    <li><code>{ot}__global__max</code> — max |score| across all biosamples</li>
+    <li><code>{ot}__global__mean_abs</code> — mean |score| across all biosamples</li>
+    <li><code>{ot}__global__std</code> — std of raw scores</li>
+  </ul>
+  <p>Total: 5 × (10 × 2 + 3) = <strong>115 features</strong>.</p>
+</div>
+
+<p>
+  Tissues are categorized by keyword matching on the biosample name
+  (e.g. "cortex" → brain; "ventricle" → heart). The same exact
+  aggregation runs at training time and at serving time so inference-time
+  features are drop-in replacements for cached ones.
+</p>
+
+<!-- ========================================================= -->
+
+<h2 id="splits">6. Splits &amp; validation</h2>
+
+<p>
+  This is the core of the v1 → v2 improvement. A naive random K-fold
+  split of variants is not valid because variants cluster in genes and in
+  linkage-disequilibrium blocks. If two variants from the same gene end
+  up on either side of a train/test boundary, their AlphaGenome features
+  are correlated and the model can memorize rather than generalize.
+</p>
+
+<h3>Gene-grouped splits</h3>
+<p>
+  Every variant is assigned to a gene group (VEP <code>gene_symbol</code>
+  when available, otherwise nearest-gene, otherwise a 100-kb position
+  bucket). We use <code>GroupShuffleSplit</code> to carve a 20% held-out
+  test set where <em>no gene group</em> crosses the boundary, then
+  <code>GroupKFold</code> for 5-fold cross-validation on the training
+  portion.
+</p>
+
+<pre><code>from sklearn.model_selection import GroupShuffleSplit, GroupKFold
+
+# 80/20 held-out by gene
+splitter = GroupShuffleSplit(n_splits=1, test_size=0.2, random_state=42)
+train_idx, test_idx = next(splitter.split(X, y, groups=gene_groups))
+
+# 5-fold CV on training, still gene-grouped
+cv = GroupKFold(n_splits=5)</code></pre>
+
+<h3>No leakage in preprocessing</h3>
+<p>
+  Imputer and scaler live <em>inside</em> the sklearn Pipeline, so they
+  are refit on each training fold. In v1, <code>StandardScaler</code>
+  was fit on combined aging+control data before CV — a minor leak for
+  Random Forest, but enough that we codify the fix as a unit test
+  (<code>tests/test_no_leakage.py</code>).
+</p>
+
+<pre><code>from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestClassifier
+
+pipe = Pipeline([
+    ("impute", SimpleImputer(strategy="constant", fill_value=0.0)),
+    ("scale",  StandardScaler()),
+    ("clf",    RandomForestClassifier(n_estimators=300, max_depth=10,
+                                      class_weight="balanced",
+                                      random_state=42)),
+])</code></pre>
+
+<h3>Leakage audit</h3>
+<p>
+  We run both grouped and naive (random) 5-fold CV on the training set
+  and report both AUCs. The delta is the LD/gene leakage that would
+  have inflated metrics under v1's naive design.
+</p>
+
+<!-- ========================================================= -->
+
+<h2 id="train">7. Training the classifier</h2>
+
+<div class="two-col">
+  <div>
+    <h3>Binary task</h3>
+    <p>
+      Random Forest · 300 trees · max depth 10 ·
+      <code>class_weight="balanced"</code> (mostly cosmetic at 1:1) ·
+      trained on 80% of gene groups, tested on the held-out 20%.
+    </p>
+  </div>
+  <div>
+    <h3>Multi-class task</h3>
+    <p>
+      Same pipeline, 400 trees. Aging-only subset. Trait categories kept
+      only if ≥30 variants. Majority-class and random (1/K) baselines
+      reported alongside the test-set accuracy.
+    </p>
+  </div>
+</div>
+
+<h3>Reported metrics</h3>
+<table>
+<tr><th>Metric</th><th>Why it's here</th></tr>
+<tr><td>Balanced accuracy</td><td>Headline — insensitive to class imbalance</td></tr>
+<tr><td>ROC-AUC</td><td>Threshold-independent discrimination</td></tr>
+<tr><td>PR-AUC</td><td>More informative under rarity than ROC-AUC</td></tr>
+<tr><td>Brier score</td><td>Calibration — are P(aging) values meaningful?</td></tr>
+<tr><td>Raw accuracy</td><td>Reported but never headlined alone</td></tr>
+<tr><td>Permutation p (n=1000)</td><td>Label-shuffled null distribution — is AUC above chance?</td></tr>
+<tr><td>Naive vs grouped CV AUC delta</td><td>The leakage v1 hid</td></tr>
+</table>
+
+<!-- ========================================================= -->
+
+<h2 id="results">8. Results &amp; honest baselines</h2>
+
+<p>
+  Final numbers from <code>results/metrics.json</code>, v2.1 config
+  (<code>seed=42</code>, 5,211 aging vs 5,054 MAF-matched control variants,
+  1:1 balanced, 5-fold gene-grouped CV on 80%, held-out 20% test by gene).
+</p>
+
+<h3>Binary task — aging vs MAF-matched control (v2.1)</h3>
+
+<table>
+<tr>
+  <th>Metric</th>
+  <th>CV (grouped, train)</th>
+  <th>Test (held-out)</th>
+  <th>v2.0 (for contrast)</th>
+  <th>v1 (legacy)</th>
+</tr>
+<tr>
+  <td><strong>Balanced accuracy</strong></td>
+  <td class="num">0.558</td>
+  <td class="num"><strong>0.574</strong></td>
+  <td class="num">0.664</td>
+  <td class="num">not reported</td>
+</tr>
+<tr>
+  <td><strong>ROC-AUC</strong></td>
+  <td class="num">0.580</td>
+  <td class="num"><strong>0.601</strong></td>
+  <td class="num">0.838</td>
+  <td class="num">0.863</td>
+</tr>
+<tr>
+  <td>PR-AUC</td>
+  <td class="num">0.614</td>
+  <td class="num">0.635</td>
+  <td class="num">0.982</td>
+  <td class="num">—</td>
+</tr>
+<tr>
+  <td>Brier (calibration, lower better)</td>
+  <td class="num">0.243</td>
+  <td class="num">0.240</td>
+  <td class="num">0.071</td>
+  <td class="num">—</td>
+</tr>
+<tr>
+  <td>F1 (aging)</td>
+  <td class="num">0.485</td>
+  <td class="num">0.481</td>
+  <td class="num">0.953</td>
+  <td class="num">—</td>
+</tr>
+<tr>
+  <td>Raw accuracy</td>
+  <td class="num">0.553</td>
+  <td class="num">0.567</td>
+  <td class="num">0.913</td>
+  <td class="num">0.921</td>
+</tr>
+<tr>
+  <td><strong>Permutation p (n=1,000)</strong></td>
+  <td class="num" colspan="2"><strong>0.001</strong> (0/1,000 shuffles reached observed AUC)</td>
+  <td class="num">0.001</td>
+  <td class="num">&lt;0.001 (invalid — v1 had leakage)</td>
+</tr>
+<tr>
+  <td>Naive CV AUC (leakage audit)</td>
+  <td class="num" colspan="2">0.583</td>
+  <td class="num">0.859</td>
+  <td class="num">—</td>
+</tr>
+<tr>
+  <td>Grouped CV AUC (leakage audit)</td>
+  <td class="num" colspan="2">0.580</td>
+  <td class="num">0.851</td>
+  <td class="num">—</td>
+</tr>
+<tr>
+  <td><strong>Leakage delta AUC</strong></td>
+  <td class="num" colspan="2"><strong>+0.003</strong> (essentially none)</td>
+  <td class="num">+0.008</td>
+  <td class="num">hidden</td>
+</tr>
+<tr>
+  <td>Train class ratio</td>
+  <td class="num" colspan="2"><strong>~1:1</strong> (4,299:4,025)</td>
+  <td class="num">8.6:1</td>
+  <td class="num">10:1</td>
+</tr>
+</table>
+
+<div class="callout">
+  <strong>The v2.0 → v2.1 story.</strong> Two training runs shipped. The
+  first (v2.0) used v1's 500 Ensembl-random controls and reported test AUC
+  <strong>0.838</strong>. Once v2.1 swapped in 5,054 MAF-matched controls
+  from the 1000 Genomes high-coverage panel, test AUC dropped to
+  <strong>0.601</strong>. Same model, same pipeline, same code — the only
+  change was making controls properly frequency-matched.
+</div>
+
+<div class="caveat">
+  <strong>Read it honestly.</strong> v2.0's 0.838 AUC was mostly the
+  classifier learning <em>"is this variant common or rare?"</em> — because
+  aging variants are GWAS-discovered (preferentially common, mean MAF ~0.31)
+  and v1 controls were Ensembl-random (93% unknown MAF, likely rare). With
+  matched MAF distributions, the real signal is
+  <strong>AUC 0.601</strong> — modest, but above chance, and permutation-
+  tested significant (p = 0.001). The leakage audit delta is +0.003 —
+  essentially none — so the 0.838 → 0.601 drop is entirely the control-
+  confound fix, not pipeline fixes.
+</div>
+
+<h3>Multi-class task — trait category (12 classes, aging-only)</h3>
+
+<table>
+<tr><th>Metric</th><th>CV</th><th>Test</th><th>Baselines</th></tr>
+<tr>
+  <td>Accuracy</td>
+  <td class="num">0.396</td>
+  <td class="num">0.362</td>
+  <td class="num">majority 0.502 · random 0.083</td>
+</tr>
+<tr>
+  <td><strong>Balanced accuracy</strong></td>
+  <td class="num">0.110</td>
+  <td class="num"><strong>0.096</strong></td>
+  <td class="num">random 0.083</td>
+</tr>
+</table>
+
+<div class="caveat">
+  <strong>Honest negative.</strong> Test balanced accuracy 0.096 is barely
+  above the 0.083 random baseline. The classifier mostly predicts
+  <em>cardiovascular</em> (50% of aging variants) and rarely gets other
+  traits right. Trait-level regulatory signatures are not separable at this
+  scale with this feature set — either the labels are too coarse, the
+  feature aggregation is too lossy, or there simply isn't enough
+  trait-specific signal in the AlphaGenome outputs we're using.
+</div>
+
+<h3>Top features (binary task, Random Forest feature importance)</h3>
+
+<p>See <code>results/figures/importance_binary.png</code> and
+<code>results/importance_binary.csv</code>. Highlights:</p>
+<ul>
+  <li><code>CHIP_TF__brain__mean_abs</code> — mean absolute transcription-factor binding change in brain biosamples</li>
+  <li><code>RNA_SEQ__blood__mean_abs</code> — mean absolute RNA expression change in blood biosamples</li>
+  <li><code>RNA_SEQ__*__mean_abs</code> across multiple tissues — consistent with v1's finding that aging-associated variants have stronger average predicted expression effects</li>
+</ul>
+
+<!-- ========================================================= -->
+
+<h2 id="webapp">9. Inference pipeline (webapp)</h2>
+
+<p>
+  The webapp is the point of the project — it demonstrates the whole
+  pipeline end-to-end. Two modes:
+</p>
+
+<div class="two-col">
+  <div class="card">
+    <strong>Gallery (precomputed)</strong>
+    <p>
+      A curated set of well-known aging variants whose AlphaGenome scores
+      are already cached. Click a card → instant prediction. Good for
+      reviewers who don't want to wait.
+    </p>
+  </div>
+  <div class="card">
+    <strong>Live inference</strong>
+    <p>
+      Enter any rsID or <code>chr:pos:ref:alt</code>. The backend:
+    </p>
+    <ol>
+      <li>Resolves rsID → genomic coordinates via Ensembl REST</li>
+      <li>Calls AlphaGenome (~30-60s per variant)</li>
+      <li>Aggregates to 115 features</li>
+      <li>Runs binary + multi-class classifiers</li>
+      <li>Returns prediction + probability + tissue × output heatmap + top contributing features</li>
+    </ol>
+  </div>
+</div>
+
+<h3>Backend endpoints</h3>
+<table>
+<tr><th>Endpoint</th><th>Returns</th></tr>
+<tr><td><code>GET /api/healthz</code></td><td>Health check + model availability</td></tr>
+<tr><td><code>GET /api/gallery</code></td><td>Precomputed variant cards</td></tr>
+<tr><td><code>GET /api/predict/{rsid}</code></td><td>Prediction for rsID</td></tr>
+<tr><td><code>POST /api/predict</code></td><td>Prediction for rsID or coord</td></tr>
+<tr><td><code>GET /api/compare?a=&amp;b=</code></td><td>Side-by-side + delta heatmap</td></tr>
+</table>
+
+<h3>How to run</h3>
+<pre><code>conda activate aging-atlas
+uvicorn src.inference.api:app --host 0.0.0.0 --port 8000
+
+# then open http://localhost:8000/</code></pre>
+
+<!-- ========================================================= -->
+
+<h2 id="limits">10. Limitations</h2>
+
+<div class="caveat">
+<ul>
+  <li><strong>"Aging variant" is a heterogeneous label.</strong> Sources
+      span GWAS trait associations, longevity cohorts, aging-gene
+      regions, and curated literature. One label does not mean one
+      biology.</li>
+  <li><strong>Controls are frequency-matched, not
+      trait-negative-verified.</strong> Required to be absent from the
+      aging set and to match MAF/chromosome/neighborhood. Not guaranteed
+      trait-free.</li>
+  <li><strong>AlphaGenome predictions are not ground truth.</strong>
+      They are model outputs. Any signal reflects AlphaGenome's priors.</li>
+  <li><strong>Small decision layer, ~10k variants.</strong> Useful prior,
+      not a diagnostic.</li>
+  <li><strong>Missing populations.</strong> MAF is from 1000 Genomes /
+      gnomAD, biased toward European ancestry.</li>
+</ul>
+</div>
+
+<!-- ========================================================= -->
+
+<h2 id="v1">11. What changed from v1</h2>
+
+<table>
+<tr><th></th><th>v1 (Idea Testing 1)</th><th>v2 (Idea Testing 2)</th></tr>
+<tr><td>Aging vs control ratio</td><td>5,211 : 500 (≈10:1)</td><td>~5,000 : ~5,000 (1:1)</td></tr>
+<tr><td>Control matching</td><td>chromosome only</td><td>chromosome + MAF bin + neighborhood</td></tr>
+<tr><td>Headline metric</td><td>raw accuracy (92.1%)</td><td>balanced accuracy + ROC-AUC + PR-AUC</td></tr>
+<tr><td>Majority baseline</td><td>91.24% (not reported)</td><td>50% (1:1 balance)</td></tr>
+<tr><td>CV splits</td><td>random stratified</td><td>GroupKFold by gene</td></tr>
+<tr><td>Held-out test</td><td>none</td><td>20% by gene group</td></tr>
+<tr><td>Preprocessing leakage</td><td>StandardScaler fit on all</td><td>inside sklearn Pipeline</td></tr>
+<tr><td>Leakage regression tests</td><td>—</td><td>pytest + unit tests</td></tr>
+<tr><td>Multi-class</td><td>—</td><td>trait category, honest baselines</td></tr>
+<tr><td>Calibration</td><td>—</td><td>Brier score + reliability plot</td></tr>
+<tr><td>Leakage audit</td><td>—</td><td>naive vs grouped CV delta reported</td></tr>
+</table>
+
+<p>
+  Every methodological change in this table is codified as a test
+  (<code>tests/test_no_leakage.py</code>) so it can't silently regress.
+</p>
+
+<footer>
+  AlphaGenome × Aging Variant Study · Charles Yap · 2026
+  · Code on <a href="https://github.com/charlesyap">GitHub</a>
+  · <a href="/">back to webapp</a>
+</footer>
+
+</div>
+</body>
+</html>

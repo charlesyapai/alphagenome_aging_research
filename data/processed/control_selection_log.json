@@ -1,0 +1,22 @@
+{
+  "n_aging_input": 5211,
+  "n_aging_matchable": 5102,
+  "n_controls_matched": 5077,
+  "n_unmatched": 25,
+  "per_bin_matched": {
+    "10-50%": 3757,
+    "<0.1%": 499,
+    "5-10%": 356,
+    "1-5%": 330,
+    "0.1-1%": 135
+  },
+  "per_bin_aging": {
+    "10-50%": 3776,
+    "<0.1%": 502,
+    "5-10%": 358,
+    "1-5%": 331,
+    "0.1-1%": 135
+  },
+  "source": "1000G GRCh38 high-coverage phased panel (EBI)",
+  "seed": 42
+}
